@@ -4,6 +4,16 @@
       "from": "user",
       "text": "Publish diese App auf GitHub. Erstelle ein Repository pulse-app-taschenrechner und pushe den Code. (Template: 🌐 PulseOS Frontend)",
       "time": "2026-04-01T16:35:32.573Z"
+    },
+    {
+      "from": "agent",
+      "text": "App auf GitHub veröffentlicht: https://github.com/NastyFFM/pulse-app-taschenrechner",
+      "time": "2026-04-01T16:36:22.743Z"
+    },
+    {
+      "from": "user",
+      "text": "Deploye diese App mit Template \"🌐 PulseOS Frontend\" (Stacks: ). Folge den Deploy-Instruktionen aus dem Template.",
+      "time": "2026-04-01T16:36:47.593Z"
     }
   ]
 }

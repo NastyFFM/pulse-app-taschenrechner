@@ -6,38 +6,92 @@
 <title>Taschenrechner</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:#0d0d14; color:#e0e0e0; padding:20px; min-height:100vh; }
-h1 { font-size:20px; margin-bottom:8px; }
-p { color:#888; font-size:13px; margin-bottom:20px; }
-.card { background:#1a1a2e; border-radius:8px; padding:16px; margin-bottom:12px; border:1px solid #2a2a3e; }
-button { background:#4ecdc4; color:#0d0d14; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600; }
-button:hover { opacity:0.9; }
-input, textarea { width:100%; padding:8px; background:#13131f; border:1px solid #2a2a3e; border-radius:6px; color:#e0e0e0; font-size:13px; margin-bottom:8px; }
+body { font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg,#0d1117); color:var(--text,#c9d1d9); display:flex; align-items:center; justify-content:center; min-height:100vh; }
+.calc { background:var(--bg-card,#161b22); border-radius:16px; padding:20px; width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.4); border:1px solid var(--border,#30363d); }
+.display { background:var(--bg,#0d1117); border-radius:10px; padding:16px; margin-bottom:16px; text-align:right; min-height:72px; border:1px solid var(--border,#30363d); }
+.display .expr { color:var(--text-dim,#6e7681); font-size:13px; min-height:18px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.display .val { font-size:32px; font-weight:300; color:var(--text,#c9d1d9); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+button { padding:14px 8px; border:none; border-radius:10px; font-size:16px; cursor:pointer; font-weight:500; transition:opacity .1s,transform .08s; background:var(--bg-card-hover,#21262d); color:var(--text,#c9d1d9); }
+button:active { opacity:.7; transform:scale(.96); }
+.btn-op { background:var(--teal,#238636); color:#fff; }
+.btn-eq { background:var(--accent,#1f6feb); color:#fff; grid-row:span 2; }
+.btn-clear { background:#da3633; color:#fff; }
+.btn-wide { grid-column:span 2; }
 </style>
 </head>
 <body>
-<h1>Taschenrechner</h1>
-<p>Einfacher Taschenrechner mit Grundrechenarten</p>
-<div class="card">
-  <p>Diese App wurde mit dem PulseOS App-Builder erstellt.</p>
-  <p style="margin-top:8px;">Bearbeite <code>apps/taschenrechner/index.html</code> um sie anzupassen.</p>
+<div class="calc">
+  <div class="display">
+    <div class="expr" id="expr"></div>
+    <div class="val" id="val">0</div>
+  </div>
+  <div class="grid">
+    <button class="btn-clear btn-wide" onclick="clear()">AC</button>
+    <button class="btn-op" onclick="sign()">+/−</button>
+    <button class="btn-op" onclick="pct()">%</button>
+    <button onclick="digit('7')">7</button>
+    <button onclick="digit('8')">8</button>
+    <button onclick="digit('9')">9</button>
+    <button class="btn-op" onclick="op('/')">÷</button>
+    <button onclick="digit('4')">4</button>
+    <button onclick="digit('5')">5</button>
+    <button onclick="digit('6')">6</button>
+    <button class="btn-op" onclick="op('*')">×</button>
+    <button onclick="digit('1')">1</button>
+    <button onclick="digit('2')">2</button>
+    <button onclick="digit('3')">3</button>
+    <button class="btn-op" onclick="op('-')">−</button>
+    <button onclick="digit('0')" class="btn-wide">0</button>
+    <button onclick="dot()">.</button>
+    <button class="btn-op" onclick="op('+')">+</button>
+    <button class="btn-eq" onclick="eq()">=</button>
+  </div>
 </div>
+<script src="/sdk.js"></script>
 <script>
-// PulseOS SDK (automatisch verfuegbar):
-// PulseOS.saveState(data)     - Zustand speichern (PUT /app/taschenrechner/api/state)
-// PulseOS.loadState()         - Zustand laden (GET /app/taschenrechner/api/state)
-// PulseOS.emit(name, data)    - Output an Graph senden
-// PulseOS.onInput(name, cb)   - Input von Graph empfangen
-// PulseOS.onDataChanged(cb)   - Reagiere auf externe Datenänderungen
-// PulseOS.alert(msg)          - Zeige Alert in Agent-Bar
+let cur='0', prev='', operator='', justCalc=false;
 
-// Graph-Integration: Empfange Daten von anderen Apps
+function updateDisplay(expr) {
+  document.getElementById('val').textContent = cur.length > 12 ? parseFloat(cur).toExponential(4) : cur;
+  document.getElementById('expr').textContent = expr || '';
+}
+
+function clear() { cur='0'; prev=''; operator=''; justCalc=false; updateDisplay(); }
+function digit(d) {
+  if (justCalc) { cur=d; justCalc=false; }
+  else cur = (cur==='0' && d!=='.') ? d : cur+d;
+  updateDisplay();
+}
+function dot() {
+  if (justCalc) { cur='0.'; justCalc=false; }
+  else if (!cur.includes('.')) cur += '.';
+  updateDisplay();
+}
+function sign() { cur = cur.startsWith('-') ? cur.slice(1) : (cur!=='0' ? '-'+cur : '0'); updateDisplay(); }
+function pct() { cur = String(parseFloat(cur)/100); updateDisplay(); }
+function op(o) {
+  if (operator && !justCalc) eq();
+  prev = cur; operator = o; justCalc = false;
+  updateDisplay(cur + ' ' + {'+':'+','-':'−','*':'×','/':'÷'}[o]);
+  cur = '0';
+}
+function eq() {
+  if (!operator || !prev) return;
+  const a=parseFloat(prev), b=parseFloat(cur);
+  const ops={'+':a+b,'-':a-b,'*':a*b,'/':b!==0?a/b:'Error'};
+  const expr = prev + ' ' + {'+':'+','-':'−','*':'×','/':'÷'}[operator] + ' ' + cur + ' =';
+  cur = String(ops[operator]);
+  operator=''; prev=''; justCalc=true;
+  updateDisplay(expr);
+  if (window.PulseOS) PulseOS.emit('state', { result: parseFloat(cur) });
+}
+
+updateDisplay();
+
 if (window.PulseOS) {
-  PulseOS.onInput('data', function(incoming) {
-    console.log('Received graph input:', incoming);
-  });
-  PulseOS.onDataChanged(function() {
-    console.log('Data changed externally, reloading...');
+  PulseOS.onInput('data', function(d) {
+    if (typeof d === 'number') { cur = String(d); updateDisplay(); }
   });
 }
 </script>
