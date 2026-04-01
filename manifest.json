@@ -1,0 +1,22 @@
+{
+  "name": "Taschenrechner",
+  "icon": "🧮",
+  "color": "#3B82F6",
+  "description": "Einfacher Taschenrechner mit Grundrechenarten",
+  "inputs": [
+    {
+      "id": "data",
+      "desc": "Beliebige Daten empfangen"
+    }
+  ],
+  "outputs": [
+    {
+      "id": "state",
+      "desc": "Aktueller App-Zustand"
+    }
+  ],
+  "dataFiles": [
+    "state"
+  ],
+  "pulseSubscriptions": []
+}

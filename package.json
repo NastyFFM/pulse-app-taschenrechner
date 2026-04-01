@@ -1,0 +1,9 @@
+{
+  "name": "pulse-app-taschenrechner",
+  "version": "1.0.0",
+  "description": "Einfacher Taschenrechner mit Grundrechenarten",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
